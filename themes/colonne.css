@@ -1,0 +1,63 @@
+/* =============================================================================
+ *  fa-feed — thème « colonne »
+ *  -----------------------------------------------------------------------------
+ *  Un fil étroit, à poser dans une colonne latérale : vignettes serrées,
+ *  en-tête discret au-dessus de chaque post, séparation par un simple trait.
+ *
+ *  Pour s'en servir :
+ *    1. charger cette feuille après fa-feed.css ;
+ *    2. dans config.js :  classe: 'colonne'
+ *
+ *  Déclinaison sombre :  classe: 'colonne colonne-sombre'
+ *
+ *  Le thème ne fait que redéfinir les variables de config.css : tout reste
+ *  réglable par-dessus.
+ * ========================================================================== */
+
+.faf-colonne {
+  --faf-largeur: 100%;
+  --faf-colonnes: 1;
+  --faf-espacement: 0px;
+
+  --faf-titre-taille: 10px;
+  --faf-titre-casse: uppercase;
+  --faf-titre-interligne: 1.2px;
+  --faf-titre-padding: 0 0 10px;
+
+  --faf-post-fond: transparent;
+  --faf-post-fond-survol: color-mix(in srgb, currentColor 4%, transparent);
+  --faf-post-bordure: transparent;
+  --faf-post-bordure-survol: transparent;
+  --faf-post-arrondi: 0px;
+  --faf-post-padding: 10px 6px;
+  --faf-glissement: 0px;
+
+  --faf-tete-taille: 9px;
+  --faf-compte-casse: lowercase;
+  --faf-compte-soulignement: none;
+
+  --faf-avatar-taille: 24px;
+  --faf-image-proportion: 1;
+  --faf-image-arrondi: 2px;
+  --faf-legende-lignes: 2;
+}
+
+.faf-colonne .faf-post + .faf-post {
+  border-top: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+}
+
+.faf-colonne .faf-post-corps--brut {
+  --faf-echelle: 1;
+  zoom: var(--faf-echelle);
+}
+
+.faf-colonne-sombre {
+  --faf-post-fond: color-mix(in srgb, currentColor 6%, transparent);
+  --faf-post-fond-survol: color-mix(in srgb, currentColor 10%, transparent);
+  --faf-post-arrondi: 6px;
+  --faf-espacement: 6px;
+}
+
+.faf-colonne-sombre .faf-post + .faf-post {
+  border-top: 0;
+}

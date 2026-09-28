@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>fa-feed — démo</title>
+
+<!-- la feuille du plugin, puis les réglages : config.css passe après, donc il gagne -->
+<link rel="stylesheet" href="fa-feed.css">
+<link rel="stylesheet" href="themes/colonne.css">
+<link rel="stylesheet" href="config.css">
+
+<style>
+  body{margin:0;padding:34px;background:#12121a;color:#d9d6e0;font-family:'Trebuchet MS',sans-serif}
+  .note{font-size:11px;color:#6d6a80;margin-bottom:22px}
+  .rangee{display:flex;gap:26px;align-items:flex-start;flex-wrap:wrap}
+  .panneau{width:300px;padding:16px;background:#1b1b26;border-radius:10px}
+  .large{width:620px}
+  .clair{background:#f2eff7;color:#3a3446}
+  .etiquette{margin:0 0 12px;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#8a7fb0}
+  .clair .etiquette{color:#7a6ea6}
+
+  /* le modèle de post « du forum » — dans la vraie vie, c'est le CSS du forum
+     qui l'habille, le plugin n'y touche pas */
+  .modele{border-radius:6px;overflow:hidden;background:#232330;font-size:11px}
+  .clair .modele{background:#fff}
+  .modele-tete{display:flex;align-items:center;gap:6px;padding:6px 8px}
+  .modele-ava{width:22px;height:22px;border-radius:50%;background:#4b4560}
+  .modele-nom{font-weight:700}
+  .modele-img{display:block;width:100%;height:120px;object-fit:cover;background:#4b4560}
+  .modele-txt{padding:7px 8px;line-height:1.5;color:inherit;opacity:.85}
+
+  /* ——— exemples de réglages, à recopier dans config.css ——— */
+
+  /* deux colonnes de posts, cadres plus marqués */
+  #demo-grille .faf{
+    --faf-colonnes:2;
+    --faf-post-bordure:color-mix(in srgb, currentColor 22%, transparent);
+    --faf-glissement:2px;
+  }
+  /* un fil qui défile au lieu de s'allonger */
+  #demo-defile .faf-fil{max-height:300px;overflow-y:auto;padding-right:4px}
+  /* un modèle trop haut pour la colonne : réduit, puis coupé en fondu */
+  #demo-coupe .faf{
+    --faf-brut-echelle:.75;
+    --faf-brut-hauteur-max:150px;
+    --faf-brut-fondu:50px;
+    --faf-brut-masque:linear-gradient(to bottom, #000 calc(100% - var(--faf-brut-fondu)), transparent);
+  }
+</style>
+</head>
+<body>
+
+<p class="note">démo hors ligne : les pages sont simulées (option <code>chargeur</code>), aucune requête vers un forum.</p>
+
+<div class="rangee">
+
+  <div class="panneau">
+    <p class="etiquette">rendu brut · réglages par défaut</p>
+    <div id="demo-defaut"></div>
+  </div>
+
+  <div class="panneau large" id="demo-grille">
+    <p class="etiquette">rendu brut · deux colonnes</p>
+    <div id="demo-grille-cible"></div>
+  </div>
+
+  <div class="panneau clair">
+    <p class="etiquette">rendu carte · dates brutes</p>
+    <div id="demo-carte"></div>
+  </div>
+
+  <div class="panneau" id="demo-defile">
+    <p class="etiquette">thème colonne · fil qui défile</p>
+    <div id="demo-colonne"></div>
+  </div>
+
+  <div class="panneau" id="demo-noeud">
+    <p class="etiquette">emplacement donné en élément, pas en sélecteur</p>
+  </div>
+
+  <div class="panneau" id="demo-coupe">
+    <p class="etiquette">post mis à l'échelle · hauteur plafonnée en fondu</p>
+    <div id="demo-coupe-cible"></div>
+  </div>
+
+  <div class="panneau" id="demo-aimer">
+    <p class="etiquette">avec le bouton « j'aime »</p>
+    <div id="demo-aimer-cible"></div>
+  </div>
+
+  <div class="panneau large" id="demo-genres">
+    <p class="etiquette">trois genres mêlés · commentaire ouvert</p>
+    <div id="demo-genres-cible"></div>
+  </div>
+
+</div>
+
+<script src="fa-feed.js"></script>
+<script>
+/* --- des pages de forum pour de faux -------------------------------------- */
+
+var COMPTES = [
+  { id: '101', nom: '@marchand.de.sable', modele: 'a', teinte: '#5b5474' },
+  { id: '102', nom: '@ciel.de.traine',    modele: 'b', teinte: '#7a6ea6' },
+  { id: '103', nom: '@nuit.blanche',      modele: 'a', teinte: '#4b4560' },
+  { id: '104', nom: '@pluie.fine',        modele: 'b', teinte: '#8189cf' }
+];
+
+var LEGENDES = [
+  'trois heures du matin et toujours pas sommeil',
+  'on a retrouvé le chat sur le toit du voisin',
+  'premier soleil depuis deux semaines',
+  'la recette a raté mais on a mangé quand même',
+  'personne ne m’avait dit que ça montait autant'
+];
+
+function carreau(couleur) {
+  return 'data:image/svg+xml;utf8,'
+    + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">'
+      + '<rect width="40" height="40" fill="' + couleur + '"/></svg>');
+}
+
+/* deux versions du modèle, comme sur un vrai forum : le plugin doit encaisser
+   les deux grâce à la liste de sélecteurs */
+function modele(v, compte, legende, teinte) {
+  var classe = v === 'a' ? 'modele insta_v1' : 'modele insta_post_v2';
+  /* la version b porte ses commentaires DANS le post : le fil doit garder le
+     post et ne pas se laisser écarter par "ignorer" */
+  var commentaires = v === 'b'
+    ? '<div class="fondcomment modele-txt">un commentaire sous le post</div>'
+    : '';
+  return '<div class="' + classe + '">'
+    + '<div class="modele-tete"><img class="modele-ava" src="' + carreau('#6d6a80') + '" alt="">'
+    + '<span class="modele-nom">' + compte + '</span></div>'
+    + '<img class="modele-img" src="' + carreau(teinte) + '" alt="">'
+    + '<p class="modele-txt">' + legende + '</p>'
+    + commentaires
+    + '</div>';
+}
+
+function pageListe() {
+  var lignes = COMPTES.map(function (c, i) {
+    var dernier = 9000 - i * 7;
+    return '<tr><td><a class="topictitle" href="/t' + c.id + '-' + c.nom + '">' + c.nom + '</a></td>'
+      + '<td class="topicslist-lastpost"><a href="/t' + c.id + '-x#' + dernier + '">voir</a>'
+      + '<span class="timeposte">Lun ' + (20 - i) + ' Sep 2026 - 1' + i + ':30</span></td></tr>';
+  });
+  return '<html><head><title>Réseaux</title></head><body><table>' + lignes.join('') + '</table></body></html>';
+}
+
+/* les « j'aime » du faux forum : un compteur par message, et des adresses de
+   vote à jetons, comme celles que Forumactif pose dans data-href */
+var AIMES = {};
+function jeton() { return Math.random().toString(36).slice(2, 8); }
+
+function pageSujet(id) {
+  var c = COMPTES.filter(function (x) { return x.id === id; })[0] || COMPTES[0];
+  var i = COMPTES.indexOf(c);
+  var messages = [0, 1, 2].map(function (n) {
+    var num = 9000 - i * 7 - n * 2;
+    if (AIMES[num] == null) AIMES[num] = n;
+    var vote = '/vote_like?cvf[0]=' + jeton() + '&cvf[1]=' + jeton() + '&l_vote=' + num;
+    return '<div class="post post_row post--' + num + '">'
+      + '<a class="post_date" href="/t' + c.id + '-x#' + num + '">Lun ' + (20 - i - n) + ' Sep 2026 - 1' + i + ':0' + n + '</a>'
+      + '<button class="rep-button" data-href="' + vote + '&like_val=3" data-href-rm="' + vote + '&like_val=5">'
+      + '<span class="rep-nb">' + AIMES[num] + '</span></button>'
+      + modele(c.modele, c.nom, LEGENDES[(i + n) % LEGENDES.length], c.teinte)
+      + '</div>';
+  });
+  /* une story : un troisième genre, à côté du post et du commentaire.
+     Comme sur un vrai forum, un numéro plus grand = un message plus récent. */
+  messages.push('<div class="post post_row post--' + (9100 - i) + '">'
+    + '<a class="post_date" href="/t' + c.id + '-x#' + (9100 - i) + '">Mar 22 Sep 2026 - 0' + i + ':10</a>'
+    + '<div class="modele insta_story"><p class="modele-txt">une story de ' + c.nom + '</p></div></div>');
+  /* et le dernier message du sujet est un commentaire, pas un post */
+  messages.push('<div class="post post_row post--' + (9050 - i) + '">'
+    + '<a class="post_date" href="/t' + c.id + '-x#' + (9050 - i) + '">Lun 21 Sep 2026 - 0' + i + ':30</a>'
+    + '<div class="fondcomment insta_commentaire">jolie photo !</div></div>');
+  return '<html><head><title>' + c.nom + '</title></head><body>' + messages.join('') + '</body></html>';
+}
+
+/* le formulaire de réponse du faux forum, avec ses champs cachés à jetons */
+function pageReponse(t) {
+  return '<html><head><title>Répondre</title></head><body>'
+    + '<form name="post" action="/post" method="post" enctype="multipart/form-data">'
+    + '<input type="hidden" name="t" value="' + t + '">'
+    + '<input type="hidden" name="mode" value="reply">'
+    + '<input type="hidden" name="tid" value="' + jeton() + '">'
+    + '<input type="hidden" name="lt" value="' + jeton() + '">'
+    + '<input type="hidden" name="auth[]" value="' + jeton() + '">'
+    + '<input type="hidden" name="auth[]" value="' + jeton() + '">'
+    + '<input type="hidden" name="notify" value="0">'
+    + '<input type="hidden" name="attach_sig" value="1">'
+    + '<textarea name="message"></textarea>'
+    + '<input type="submit" name="post" value="Envoyer">'
+    + '</form></body></html>';
+}
+
+function chargeur(url) {
+  if (/^\/vote_like/.test(url)) {
+    var num = +(url.match(/l_vote=(\d+)/) || [])[1];
+    var val = +(url.match(/like_val=(\d+)/) || [])[1];
+    if (!num || !/cvf\[0\]=\w+/.test(url)) throw new Error('vote sans jeton — refusé');
+    AIMES[num] = Math.max(0, (AIMES[num] || 0) + (val === 3 ? 1 : -1));
+    return 'ok';
+  }
+  if (/^\/post\?/.test(url)) return pageReponse((url.match(/t=(\d+)/) || [])[1]);
+  if (/^\/f\d/.test(url)) return pageListe();
+  var m = url.match(/\/t(\d+)/);
+  return pageSujet(m ? m[1] : '101');
+}
+
+/* l'envoi du commentaire passe par fetch, pas par le chargeur : le faux forum
+   répond ici, et sait dire non */
+window.COMMENTAIRES = [];
+window.REFUSER = null;
+var vraiFetch = window.fetch;
+window.fetch = function (url, opts) {
+  if (String(url).indexOf('/post') === 0 && opts && opts.method === 'POST') {
+    var d = opts.body;
+    if (!d.get('tid') || !d.get('lt') || d.getAll('auth[]').length !== 2) {
+      return Promise.resolve({ ok: true, text: function () {
+        return Promise.resolve('<html><body><div class="error">formulaire incomplet</div></body></html>'); } });
+    }
+    if (window.REFUSER) {
+      return Promise.resolve({ ok: true, text: function () {
+        return Promise.resolve('<html><body><div class="error">' + window.REFUSER + '</div></body></html>'); } });
+    }
+    window.COMMENTAIRES.push({ sujet: d.get('t'), message: d.get('message'), mode: d.get('mode') });
+    return Promise.resolve({ ok: true, text: function () {
+      return Promise.resolve('<html><body><p>Votre message a bien été enregistré.</p></body></html>'); } });
+  }
+  return vraiFetch.apply(this, arguments);
+};
+
+/* --- les quatre exemples --------------------------------------------------- */
+
+var COMMUN = {
+  chargeur: chargeur,
+  cache: 0,
+  style: false,
+  sources: [{ titre: 'réseaux', forum: 14, url: '/f14-reseaux' }],
+  afficher: ['post'],
+  balisage: {
+    genres: {
+      /* le commentaire est déclaré avant le post : quand les deux correspondent
+         au même message, c'est le bloc le plus englobant qui tranche de toute
+         façon — l'ordre ne sert qu'aux égalités */
+      commentaire: ['.fondcomment'],
+      post: ['[class*="insta_"]:not(.insta_story)'],
+      story: ['.insta_story']
+    }
+  }
+};
+
+function avec(sup) {
+  var o = {}, k;
+  for (k in COMMUN) o[k] = COMMUN[k];
+  for (k in sup) o[k] = sup[k];
+  return o;
+}
+
+FAFeed.init(avec({ emplacement: '#demo-defaut', posts: 3 }));
+
+FAFeed.init(avec({ emplacement: '#demo-grille-cible', posts: 6, parSujet: 2 }));
+
+FAFeed.init(avec({
+  emplacement: '#demo-carte',
+  posts: 3,
+  rendu: 'carte',
+  datesRelatives: false,
+  champs: {
+    avatar: ['.modele-ava'],
+    pseudo: ['.modele-nom'],
+    image: ['.modele-img'],
+    legende: ['.modele-txt']
+  }
+}));
+
+FAFeed.init(avec({
+  emplacement: '#demo-colonne',
+  classe: 'colonne',
+  titre: 'sur les réseaux',
+  posts: 8,
+  source: false
+}));
+
+/* l'emplacement accepte aussi un élément déjà en main — c'est ce que fait
+   console-test.js avec son panneau flottant */
+FAFeed.init(avec({
+  emplacement: document.getElementById('demo-noeud'),
+  titre: 'fil',
+  texteChargement: 'ça charge…',
+  posts: 2
+}));
+
+FAFeed.init(avec({ emplacement: '#demo-coupe-cible', posts: 3 }));
+
+FAFeed.init(avec({
+  emplacement: '#demo-aimer-cible',
+  posts: 3,
+  aimer: true,
+  texteAimer: '♡',
+  texteAime: '♥'
+}));
+
+/* le même fil, mais montrant trois genres à la fois, et ouvert au commentaire */
+FAFeed.init(avec({
+  emplacement: '#demo-genres-cible',
+  posts: 9,
+  parSujet: 3,
+  afficher: ['post', 'story', 'commentaire'],
+  genre: true,
+  source: false,
+  commenter: true,
+  confirmerCommentaire: false
+}));
+</script>
+</body>
+</html>

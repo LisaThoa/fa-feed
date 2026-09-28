@@ -1,0 +1,253 @@
+/* =============================================================================
+ *  fa-feed — CONFIGURATION DES STYLES
+ *  -----------------------------------------------------------------------------
+ *  Tous les réglages d'apparence sont ici. Deux façons de s'en servir :
+ *
+ *   a) coller ce fichier dans PA → Affichage → Couleurs → Feuille de style CSS
+ *      (il passe APRÈS fa-feed.css, donc il gagne) ;
+ *   b) ou le charger comme feuille à part, après fa-feed.css.
+ *
+ *  fa-feed.css n'a normalement pas besoin d'être touchée : elle ne fait que
+ *  décrire la structure, et lit toutes les valeurs ci-dessous.
+ *
+ *  Par défaut, le fil emprunte la couleur du texte autour de lui
+ *  (currentColor) : il se fond dans n'importe quel design sans rien régler.
+ *  Pour reprendre les couleurs du forum, mettre ses propres variables à la
+ *  place des valeurs :  --faf-post-fond: var(--ma-couleur-de-bloc);
+ * ========================================================================== */
+
+:root {
+
+  /* --- disposition ---------------------------------------------------------- */
+  --faf-largeur: auto;          /* largeur du fil entier : 280px, 100%, auto… */
+  --faf-colonnes: 1;            /* nb de colonnes de posts */
+  --faf-espacement: 10px;       /* entre deux posts */
+
+  /* --- le titre du fil ------------------------------------------------------ */
+  --faf-titre-taille: 12px;
+  --faf-titre-graisse: 700;
+  --faf-titre-casse: uppercase; /* none pour laisser la casse d'origine */
+  --faf-titre-interligne: .4px;
+  --faf-titre-couleur: currentColor;
+  --faf-titre-padding: 0 0 6px;
+
+  /* --- le cadre d'un post --------------------------------------------------- */
+  --faf-post-fond: transparent;
+  --faf-post-fond-survol: transparent;
+  --faf-post-bordure: color-mix(in srgb, currentColor 14%, transparent);
+  --faf-post-bordure-survol: color-mix(in srgb, currentColor 35%, transparent);
+  --faf-post-bordure-epaisseur: 1px;
+  --faf-post-arrondi: 8px;
+  --faf-post-padding: 8px;
+  --faf-glissement: 0px;        /* remontée au survol (0 = immobile) */
+  --faf-transition: .18s;
+
+  /*  Quand le post entier mène au message (cliquable: true dans config.js) */
+  --faf-post-curseur: pointer;
+  --faf-post-focus: currentColor;       /* le liseré au clavier */
+  --faf-post-focus-epaisseur: 2px;
+
+  /* --- l'en-tête d'un post -------------------------------------------------- */
+  --faf-tete-taille: 10px;
+  --faf-tete-espacement: 6px;
+  --faf-tete-padding: 0 0 6px;
+
+  --faf-compte-graisse: 700;
+  --faf-compte-casse: none;     /* uppercase / lowercase si besoin */
+  --faf-compte-couleur: currentColor;
+  --faf-compte-couleur-survol: currentColor;
+  --faf-compte-soulignement: underline; /* none pour ne rien souligner */
+
+  --faf-source-couleur: color-mix(in srgb, currentColor 55%, transparent);
+  --faf-source-taille: .9em;
+  --faf-source-casse: uppercase;
+
+  --faf-date-couleur: color-mix(in srgb, currentColor 55%, transparent);
+  --faf-date-couleur-survol: currentColor;
+
+  /* --- rendu « carte » seulement -------------------------------------------- */
+  --faf-carte-espacement: 6px;
+  --faf-avatar-taille: 28px;
+  --faf-avatar-arrondi: 50%;    /* 50% = rond, 4px = carré adouci */
+  --faf-avatar-fond: color-mix(in srgb, currentColor 10%, transparent);
+  --faf-pseudo-taille: 11px;
+  --faf-pseudo-graisse: 600;
+  --faf-image-proportion: 1;    /* 1 = carré, 4/5 = portrait, 16/9 = paysage */
+  --faf-image-arrondi: 4px;
+  --faf-legende-taille: 11px;
+  --faf-legende-interligne: 1.5;
+  --faf-legende-lignes: 3;      /* au-delà, la légende est coupée */
+  --faf-legende-couleur: color-mix(in srgb, currentColor 80%, transparent);
+
+  /* --- rendu « brut » seulement --------------------------------------------- */
+  /*  Le post est repris tel quel : son habillage vient du forum, pas d'ici. La
+   *  seule contrainte posée est de ne pas dépasser la largeur du fil. Mettre
+   *  "none" pour ne rien contraindre du tout — à réserver aux modèles qui
+   *  tiennent déjà dans l'emplacement, sinon ils débordent.
+   */
+  --faf-brut-largeur-max: 100%;
+
+  /*  Un modèle de post est dessiné pour une page entière : dans une colonne, il
+   *  devient vite très haut. Les trois réglages suivants n'ont aucun effet tant
+   *  qu'on ne les change pas. Un jeu qui marche bien :
+   *
+   *    --faf-brut-echelle: .8;
+   *    --faf-brut-hauteur-max: 420px;
+   *    --faf-brut-masque: linear-gradient(to bottom, #000 calc(100% - var(--faf-brut-fondu)), transparent);
+   *
+   *  L'échelle réduit le post en entier, texte et images ensemble, sans le
+   *  déformer : .8 = quatre cinquièmes de sa taille.
+   */
+  --faf-brut-echelle: 1;
+
+  /*  La hauteur maximale coupe ce qui dépasse — le post entier reste à un clic,
+   *  dans sa fenêtre.
+   */
+  --faf-brut-hauteur-max: none;
+
+  /*  Avec le masque ci-dessus, la coupe se fond sur cette hauteur au lieu d'être
+   *  nette.
+   */
+  --faf-brut-fondu: 70px;
+  --faf-brut-masque: none;
+
+  /* --- la fenêtre du post (auClic: 'couche') --------------------------------- */
+  /*  Par défaut elle ne montre rien d'autre que le post, à sa taille, avec une
+   *  croix pour fermer : pas de cadre, pas de fond, pas de marge. Ce qu'on voit
+   *  est le post tel que le forum l'habille.
+   *
+   *  Pour lui donner un cadre, remplir ces trois-là :
+   *    --faf-couche-fond: rgb(from var(--ma-couleur-de-bloc) r g b / .8);
+   *    --faf-couche-padding: 10px;
+   *    --faf-couche-arrondi: 12px;
+   */
+  --faf-couche-largeur: fit-content;  /* un nombre de px pour forcer une largeur */
+  --faf-couche-fond: transparent;
+  --faf-couche-verre: 0px;       /* flou derrière la fenêtre — n'a d'effet
+                                    qu'avec un fond translucide */
+  --faf-couche-couleur: inherit;
+  --faf-couche-padding: 0px;
+  --faf-couche-arrondi: 0px;
+  --faf-couche-bordure: transparent;
+  --faf-couche-bordure-epaisseur: 0px;
+  --faf-couche-ombre: none;
+
+  /*  Le voile sur le reste de la page. Volontairement léger : la fenêtre doit
+   *  flotter, pas éteindre le forum. rgba(0,0,0,0) pour aucun voile du tout.
+   */
+  --faf-couche-voile: rgba(0, 0, 0, .3);
+  --faf-couche-flou: 0px;        /* 2-3px pour estomper la page derrière */
+
+  --faf-couche-hauteur-max: 88vh; /* au-delà, le contenu défile dans la fenêtre */
+  --faf-couche-marge: 24px;      /* l'air minimum sur les côtés, petit écran */
+  --faf-couche-apparition: .16s; /* 0s pour qu'elle apparaisse sans animation */
+  --faf-couche-plan: 9999;       /* seulement pour les navigateurs sans <dialog> */
+  --faf-couche-echelle: 1;       /* le post y est montré en entier, non coupé */
+
+  --faf-couche-fermer-taille: 24px;
+  --faf-couche-fermer-couleur: currentColor;
+  --faf-couche-fermer-couleur-survol: currentColor;
+  --faf-couche-fermer-fond: color-mix(in srgb, currentColor 14%, transparent);
+  --faf-couche-fermer-haut: 8px;
+  --faf-couche-fermer-droite: 8px;
+
+  --faf-couche-lien-taille: 11px;
+  --faf-couche-lien-couleur: color-mix(in srgb, currentColor 60%, transparent);
+  --faf-couche-lien-couleur-survol: currentColor;
+  --faf-couche-lien-marge: 10px;
+
+  /* --- le pied d'un post : aimer -------------------------------------------- */
+  --faf-pied-taille: 11px;
+  --faf-pied-espacement: 5px;
+  --faf-pied-padding: 6px 0 0;
+
+  /*  La taille du cœur, indépendante du reste du pied. Le monter à 16-18px le
+   *  rend nettement plus présent sous le post.
+   */
+  --faf-like-taille: inherit;
+
+  --faf-like-couleur: color-mix(in srgb, currentColor 60%, transparent);
+  --faf-like-couleur-survol: currentColor;
+  --faf-like-couleur-actif: currentColor;   /* la couleur du cœur une fois aimé */
+  --faf-like-couleur-erreur: currentColor;
+  --faf-like-fond: transparent;
+  --faf-like-fond-survol: transparent;
+  --faf-like-fond-actif: transparent;
+  --faf-like-bordure: transparent;
+  --faf-like-bordure-epaisseur: 0px;
+  --faf-like-arrondi: 4px;
+  --faf-like-padding: 2px 4px;
+  --faf-like-grossissement: 1;    /* 1.25 pour que le cœur grossisse au survol */
+  --faf-like-opacite-attente: .45;
+  --faf-like-nb-couleur: color-mix(in srgb, currentColor 55%, transparent);
+  --faf-like-erreur-taille: .9em;
+
+  /* --- commenter ------------------------------------------------------------ */
+  --faf-commentaire-taille: 11px;
+  --faf-commentaire-padding: 6px 0 0;
+  --faf-commentaire-espacement: 6px;
+
+  --faf-commenter-couleur: color-mix(in srgb, currentColor 60%, transparent);
+  --faf-commenter-couleur-survol: currentColor;
+  --faf-commenter-fond: transparent;
+  --faf-commenter-fond-survol: transparent;
+  --faf-commenter-bordure: color-mix(in srgb, currentColor 20%, transparent);
+  --faf-commenter-bordure-survol: color-mix(in srgb, currentColor 45%, transparent);
+  --faf-commenter-bordure-epaisseur: 1px;
+  --faf-commenter-arrondi: 4px;
+  --faf-commenter-padding: 4px 8px;
+  --faf-commenter-opacite-attente: .45;
+
+  --faf-champ-fond: color-mix(in srgb, currentColor 6%, transparent);
+  --faf-champ-bordure: color-mix(in srgb, currentColor 20%, transparent);
+  --faf-champ-bordure-active: color-mix(in srgb, currentColor 50%, transparent);
+  --faf-champ-bordure-epaisseur: 1px;
+  --faf-champ-arrondi: 4px;
+  --faf-champ-padding: 6px 8px;
+  --faf-champ-marge: 6px;
+
+  /*  Le mot sous le formulaire : « commentaire publié », ou le refus du forum.
+   *  Mettre une vraie couleur ici aide à distinguer les deux.
+   */
+  --faf-mot-couleur: color-mix(in srgb, currentColor 55%, transparent);
+  --faf-mot-couleur-fait: currentColor;
+  --faf-mot-couleur-souci: currentColor;
+  --faf-mot-taille: .95em;
+  --faf-mot-marge: 6px 0 0;
+
+  /* --- « rien de neuf » / chargement ---------------------------------------- */
+  --faf-vide-taille: 11px;
+  --faf-vide-style: italic;
+  --faf-vide-couleur: color-mix(in srgb, currentColor 50%, transparent);
+  --faf-vide-alignement: left;
+  --faf-vide-padding: 10px 2px;
+}
+
+/* -----------------------------------------------------------------------------
+ *  Réglages à la carte
+ *  ---------------------------------------------------------------------------
+ *  Le fil porte la classe .faf, et chaque post .faf-post. Le nom du thème
+ *  donné dans config.js ajoute une classe : classe: 'colonne' → .faf-colonne.
+ *
+ *  Deux colonnes seulement sur grand écran :
+ *
+ *    @media (min-width: 900px) {
+ *      .faf { --faf-colonnes: 2; }
+ *    }
+ *
+ *  Le fil ne dépasse jamais une certaine hauteur, et défile :
+ *
+ *    .faf-fil {
+ *      max-height: 60vh;
+ *      overflow-y: auto;
+ *      padding-right: 4px;
+ *    }
+ *
+ *  En rendu « brut », le post garde l'habillage qu'il a dans le sujet. Si ce
+ *  modèle est plus large que l'emplacement du fil, le mettre à l'échelle plutôt
+ *  que de le retailler :
+ *
+ *    .faf-post-corps--brut {
+ *      zoom: .8;
+ *    }
+ * -------------------------------------------------------------------------- */

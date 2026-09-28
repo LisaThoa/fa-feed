@@ -1,0 +1,483 @@
+/*!
+ * fa-feed — structure du fil.
+ *
+ * Cette feuille ne décrit que l'agencement : toutes les valeurs se règlent
+ * dans config.css. Il n'y a normalement rien à modifier ici.
+ *
+ * Licence MIT.
+ */
+
+.faf {
+  width: var(--faf-largeur, auto);
+  max-width: 100%;
+  margin: 0;
+  box-sizing: border-box;
+  color: inherit;
+}
+
+.faf *,
+.faf *::before,
+.faf *::after {
+  box-sizing: border-box;
+}
+
+.faf-titre {
+  font-size: var(--faf-titre-taille, 12px);
+  font-weight: var(--faf-titre-graisse, 700);
+  text-transform: var(--faf-titre-casse, uppercase);
+  letter-spacing: var(--faf-titre-interligne, .4px);
+  color: var(--faf-titre-couleur, currentColor);
+  padding: var(--faf-titre-padding, 0 0 6px);
+  margin: 0;
+}
+
+.faf-fil {
+  display: grid;
+  grid-template-columns: repeat(var(--faf-colonnes, 1), minmax(0, 1fr));
+  gap: var(--faf-espacement, 10px);
+  align-items: start;
+}
+
+/* --- un post ---------------------------------------------------------------- */
+
+.faf-post {
+  min-width: 0;
+  overflow: hidden;
+  background: var(--faf-post-fond, transparent);
+  border: var(--faf-post-bordure-epaisseur, 1px) solid var(--faf-post-bordure, color-mix(in srgb, currentColor 14%, transparent));
+  border-radius: var(--faf-post-arrondi, 8px);
+  padding: var(--faf-post-padding, 8px);
+  transition: border-color var(--faf-transition, .18s), background var(--faf-transition, .18s), transform var(--faf-transition, .18s);
+}
+
+.faf-post--cliquable {
+  cursor: var(--faf-post-curseur, pointer);
+}
+
+.faf-post--cliquable:focus-visible {
+  outline: var(--faf-post-focus-epaisseur, 2px) solid var(--faf-post-focus, currentColor);
+  outline-offset: 2px;
+}
+
+.faf-post:hover {
+  background: var(--faf-post-fond-survol, transparent);
+  border-color: var(--faf-post-bordure-survol, color-mix(in srgb, currentColor 35%, transparent));
+  transform: translateY(calc(var(--faf-glissement, 0px) * -1));
+}
+
+/* --- l'en-tête d'un post ---------------------------------------------------- */
+
+.faf-post-tete {
+  display: flex;
+  align-items: baseline;
+  gap: var(--faf-tete-espacement, 6px);
+  font-size: var(--faf-tete-taille, 10px);
+  line-height: 1.4;
+  padding: var(--faf-tete-padding, 0 0 6px);
+  min-width: 0;
+}
+
+.faf-post-compte {
+  font-weight: var(--faf-compte-graisse, 700);
+  text-transform: var(--faf-compte-casse, none);
+  color: var(--faf-compte-couleur, currentColor);
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.faf-post-compte:hover {
+  color: var(--faf-compte-couleur-survol, currentColor);
+  text-decoration: var(--faf-compte-soulignement, underline);
+}
+
+.faf-post-source {
+  color: var(--faf-source-couleur, color-mix(in srgb, currentColor 55%, transparent));
+  font-size: var(--faf-source-taille, .9em);
+  text-transform: var(--faf-source-casse, uppercase);
+  letter-spacing: .3px;
+  white-space: nowrap;
+}
+
+.faf-post-date {
+  margin-inline-start: auto;
+  color: var(--faf-date-couleur, color-mix(in srgb, currentColor 55%, transparent));
+  text-decoration: none;
+  white-space: nowrap;
+  flex: none;
+}
+
+.faf-post-date:hover {
+  color: var(--faf-date-couleur-survol, currentColor);
+}
+
+/* --- le corps, rendu « brut » ------------------------------------------------ */
+
+.faf-post-corps {
+  min-width: 0;
+}
+
+/* Le post garde son propre habillage : on se contente de le contenir, sans
+   jamais lui imposer de dimensions — le modèle du forum fixe souvent les
+   siennes, et les écraser le déforme. */
+.faf-post-corps--brut > *,
+.faf-post-corps--brut img,
+.faf-post-corps--brut table {
+  max-width: var(--faf-brut-largeur-max, 100%);
+}
+
+/* Un modèle fait pour une page entière tient rarement dans une colonne : il se
+   met à l'échelle, et sa hauteur se plafonne. Les deux sont sans effet tant
+   qu'ils ne sont pas réglés dans config.css. */
+.faf-post-corps--brut {
+  max-height: var(--faf-brut-hauteur-max, none);
+  overflow: hidden;
+  -webkit-mask-image: var(--faf-brut-masque, none);
+  mask-image: var(--faf-brut-masque, none);
+}
+
+.faf-post-corps--brut > * {
+  zoom: var(--faf-brut-echelle, 1);
+}
+
+/* --- le corps, rendu « carte » ----------------------------------------------- */
+
+.faf-post-corps--carte {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    'avatar pseudo'
+    'image  image'
+    'legende legende';
+  align-items: center;
+  gap: var(--faf-carte-espacement, 6px);
+}
+
+.faf-post-avatar {
+  grid-area: avatar;
+  width: var(--faf-avatar-taille, 28px);
+  height: var(--faf-avatar-taille, 28px);
+  object-fit: cover;
+  border-radius: var(--faf-avatar-arrondi, 50%);
+  background: var(--faf-avatar-fond, color-mix(in srgb, currentColor 10%, transparent));
+}
+
+.faf-post-pseudo {
+  grid-area: pseudo;
+  font-weight: var(--faf-pseudo-graisse, 600);
+  font-size: var(--faf-pseudo-taille, 11px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.faf-post-image {
+  grid-area: image;
+  width: 100%;
+  aspect-ratio: var(--faf-image-proportion, 1);
+  object-fit: cover;
+  border-radius: var(--faf-image-arrondi, 4px);
+  display: block;
+}
+
+.faf-post-legende {
+  grid-area: legende;
+  font-size: var(--faf-legende-taille, 11px);
+  line-height: var(--faf-legende-interligne, 1.5);
+  color: var(--faf-legende-couleur, color-mix(in srgb, currentColor 80%, transparent));
+  display: -webkit-box;
+  -webkit-line-clamp: var(--faf-legende-lignes, 3);
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* --- le pied d'un post : aimer ----------------------------------------------- */
+
+.faf-post-pied {
+  display: flex;
+  align-items: center;
+  gap: var(--faf-pied-espacement, 5px);
+  padding: var(--faf-pied-padding, 6px 0 0);
+  font-size: var(--faf-pied-taille, 11px);
+  min-width: 0;
+}
+
+.faf-like {
+  font: inherit;
+  font-size: var(--faf-like-taille, inherit);
+  line-height: 1;
+  cursor: pointer;
+  background: var(--faf-like-fond, transparent);
+  color: var(--faf-like-couleur, color-mix(in srgb, currentColor 60%, transparent));
+  border: var(--faf-like-bordure-epaisseur, 0px) solid var(--faf-like-bordure, transparent);
+  border-radius: var(--faf-like-arrondi, 4px);
+  padding: var(--faf-like-padding, 2px 4px);
+  transition: color var(--faf-transition, .18s), background var(--faf-transition, .18s), transform var(--faf-transition, .18s);
+}
+
+.faf-like:hover:not(:disabled) {
+  color: var(--faf-like-couleur-survol, currentColor);
+  background: var(--faf-like-fond-survol, transparent);
+  transform: scale(var(--faf-like-grossissement, 1));
+}
+
+.faf-like--actif {
+  color: var(--faf-like-couleur-actif, currentColor);
+  background: var(--faf-like-fond-actif, transparent);
+}
+
+.faf-like--attente {
+  opacity: var(--faf-like-opacite-attente, .45);
+  cursor: progress;
+}
+
+.faf-like--erreur {
+  color: var(--faf-like-couleur-erreur, currentColor);
+}
+
+.faf-like-nb {
+  color: var(--faf-like-nb-couleur, color-mix(in srgb, currentColor 55%, transparent));
+  font-variant-numeric: tabular-nums;
+}
+
+.faf-like-erreur:not(:empty) {
+  margin-inline-start: auto;
+  color: var(--faf-like-couleur-erreur, currentColor);
+  font-size: var(--faf-like-erreur-taille, .9em);
+  font-style: italic;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  cursor: help;
+}
+
+/* --- commenter ---------------------------------------------------------------- */
+
+.faf-commentaire {
+  padding: var(--faf-commentaire-padding, 6px 0 0);
+  font-size: var(--faf-commentaire-taille, 11px);
+  min-width: 0;
+}
+
+.faf-commenter,
+.faf-commentaire-envoyer,
+.faf-commentaire-annuler {
+  font: inherit;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--faf-commenter-couleur, color-mix(in srgb, currentColor 60%, transparent));
+  background: var(--faf-commenter-fond, transparent);
+  border: var(--faf-commenter-bordure-epaisseur, 1px) solid var(--faf-commenter-bordure, color-mix(in srgb, currentColor 20%, transparent));
+  border-radius: var(--faf-commenter-arrondi, 4px);
+  padding: var(--faf-commenter-padding, 4px 8px);
+  transition: color var(--faf-transition, .18s), border-color var(--faf-transition, .18s), background var(--faf-transition, .18s);
+}
+
+.faf-commenter:hover:not(:disabled),
+.faf-commentaire-envoyer:hover:not(:disabled),
+.faf-commentaire-annuler:hover:not(:disabled) {
+  color: var(--faf-commenter-couleur-survol, currentColor);
+  border-color: var(--faf-commenter-bordure-survol, color-mix(in srgb, currentColor 45%, transparent));
+  background: var(--faf-commenter-fond-survol, transparent);
+}
+
+.faf-commenter:disabled,
+.faf-commentaire-envoyer:disabled,
+.faf-commentaire-annuler:disabled {
+  opacity: var(--faf-commenter-opacite-attente, .45);
+  cursor: progress;
+}
+
+.faf-commentaire-forme[hidden] {
+  display: none;
+}
+
+.faf-commentaire-champ {
+  display: block;
+  width: 100%;
+  font: inherit;
+  resize: vertical;
+  color: inherit;
+  background: var(--faf-champ-fond, color-mix(in srgb, currentColor 6%, transparent));
+  border: var(--faf-champ-bordure-epaisseur, 1px) solid var(--faf-champ-bordure, color-mix(in srgb, currentColor 20%, transparent));
+  border-radius: var(--faf-champ-arrondi, 4px);
+  padding: var(--faf-champ-padding, 6px 8px);
+  margin-bottom: var(--faf-champ-marge, 6px);
+}
+
+.faf-commentaire-champ:focus {
+  outline: none;
+  border-color: var(--faf-champ-bordure-active, color-mix(in srgb, currentColor 50%, transparent));
+}
+
+.faf-commentaire-boutons {
+  display: flex;
+  gap: var(--faf-commentaire-espacement, 6px);
+}
+
+.faf-commentaire-mot:empty {
+  display: none;
+}
+
+.faf-commentaire-mot {
+  margin: var(--faf-mot-marge, 6px 0 0);
+  font-size: var(--faf-mot-taille, .95em);
+  font-style: italic;
+  color: var(--faf-mot-couleur, color-mix(in srgb, currentColor 55%, transparent));
+}
+
+.faf-commentaire-mot--fait {
+  color: var(--faf-mot-couleur-fait, currentColor);
+}
+
+.faf-commentaire-mot--souci {
+  color: var(--faf-mot-couleur-souci, currentColor);
+  cursor: help;
+}
+
+/* --- le post ouvert en grand par-dessus le fil -------------------------------- */
+
+/* Le <dialog> lui-même ne porte aucun décor : il ne sert qu'à centrer la
+   fenêtre et à recevoir le clic « à côté ». */
+.faf-couche {
+  width: fit-content;
+  height: fit-content;
+  max-width: 100%;
+  max-height: 100%;
+  margin: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  overflow: visible;
+}
+
+.faf-couche::backdrop {
+  background: var(--faf-couche-voile, rgba(0, 0, 0, .3));
+  backdrop-filter: blur(var(--faf-couche-flou, 0px));
+}
+
+/* Repli pour un navigateur sans <dialog> */
+.faf-couche--simple {
+  position: fixed;
+  inset: 0;
+  z-index: var(--faf-couche-plan, 9999);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  background: var(--faf-couche-voile, rgba(0, 0, 0, .3));
+}
+
+/* La fenêtre fait la taille du post, et rien de plus : pas de cadre, pas de
+   fond, pas de marge. Ce qu'on voit, c'est le post tel que le forum l'habille.
+   Tout se rajoute au besoin depuis config.css. */
+.faf-couche-boite {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: var(--faf-couche-largeur, fit-content);
+  max-width: calc(100vw - var(--faf-couche-marge, 24px) * 2);
+  max-height: var(--faf-couche-hauteur-max, 88vh);
+  background: var(--faf-couche-fond, transparent);
+  -webkit-backdrop-filter: blur(var(--faf-couche-verre, 0px));
+  backdrop-filter: blur(var(--faf-couche-verre, 0px));
+  color: var(--faf-couche-couleur, inherit);
+  border: var(--faf-couche-bordure-epaisseur, 0px) solid var(--faf-couche-bordure, transparent);
+  border-radius: var(--faf-couche-arrondi, 0px);
+  padding: var(--faf-couche-padding, 0px);
+  box-shadow: var(--faf-couche-ombre, none);
+}
+
+.faf-couche-corps {
+  overflow: auto;
+  min-height: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .faf-couche-boite {
+    animation: faf-apparition var(--faf-couche-apparition, .16s) ease-out;
+  }
+}
+
+@keyframes faf-apparition {
+  from { opacity: 0; transform: scale(.97); }
+}
+
+/* Ici le post est montré en entier : ni coupe, ni mise à l'échelle. */
+.faf-couche .faf-post {
+  border: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.faf-couche .faf-post:hover {
+  transform: none;
+  background: transparent;
+}
+
+.faf-couche .faf-post-corps--brut {
+  max-height: none;
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+.faf-couche .faf-post-corps--brut > * {
+  zoom: var(--faf-couche-echelle, 1);
+}
+
+/* Une pastille, pour rester lisible même posée sur une photo. */
+.faf-couche-fermer {
+  position: absolute;
+  top: var(--faf-couche-fermer-haut, 8px);
+  right: var(--faf-couche-fermer-droite, 8px);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--faf-couche-fermer-taille, 24px);
+  height: var(--faf-couche-fermer-taille, 24px);
+  font: inherit;
+  font-size: calc(var(--faf-couche-fermer-taille, 24px) * .7);
+  line-height: 1;
+  cursor: pointer;
+  color: var(--faf-couche-fermer-couleur, currentColor);
+  background: var(--faf-couche-fermer-fond, color-mix(in srgb, currentColor 14%, transparent));
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  border: 0;
+  border-radius: 50%;
+}
+
+.faf-couche-fermer:hover {
+  color: var(--faf-couche-fermer-couleur-survol, currentColor);
+}
+
+.faf-couche-lien {
+  display: inline-block;
+  margin-top: var(--faf-couche-lien-marge, 10px);
+  font-size: var(--faf-couche-lien-taille, 11px);
+  color: var(--faf-couche-lien-couleur, color-mix(in srgb, currentColor 60%, transparent));
+  text-decoration: none;
+}
+
+.faf-couche-lien:hover {
+  color: var(--faf-couche-lien-couleur-survol, currentColor);
+  text-decoration: underline;
+}
+
+/* --- états ------------------------------------------------------------------- */
+
+.faf-vide,
+.faf-chargement {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: var(--faf-vide-padding, 10px 2px);
+  font-size: var(--faf-vide-taille, 11px);
+  font-style: var(--faf-vide-style, italic);
+  color: var(--faf-vide-couleur, color-mix(in srgb, currentColor 50%, transparent));
+  text-align: var(--faf-vide-alignement, left);
+}
